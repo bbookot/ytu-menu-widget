@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,9 +25,7 @@ import com.kampuslezzet.ytumenu.domain.model.OgunMenusu
 import com.kampuslezzet.ytumenu.graph
 import com.kampuslezzet.ytumenu.update.SurumBilgisi
 import com.kampuslezzet.ytumenu.work.Zamanlayici
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
 
@@ -42,11 +39,15 @@ class MainActivity : ComponentActivity() {
         val guncellemeIcinMi = intent.getBooleanExtra(EKSTRA_GUNCELLE, false)
 
         setContent {
-            val isKoyuMod = androidx.compose.foundation.isSystemInDarkTheme()
+            val sistemKoyuMu = isSystemInDarkTheme()
+            // null: Sistem Teması, true: Koyu, false: Açık
+            var manuelKoyuMod by remember { mutableStateOf<Boolean?>(null) }
+            val koyuModAktif = manuelKoyuMod ?: sistemKoyuMu
+
             val renkler = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                if (isKoyuMod) dynamicDarkColorScheme(this) else dynamicLightColorScheme(this)
+                if (koyuModAktif) dynamicDarkColorScheme(this) else dynamicLightColorScheme(this)
             } else {
-                if (isKoyuMod) darkColorScheme() else lightColorScheme()
+                if (koyuModAktif) darkColorScheme() else lightColorScheme()
             }
 
             MaterialTheme(colorScheme = renkler) {
@@ -56,7 +57,11 @@ class MainActivity : ComponentActivity() {
                 ) {
                     UygulamaEkrani(
                         activity = this,
-                        otomatikGuncellemeKontrol = guncellemeIcinMi
+                        otomatikGuncellemeKontrol = guncellemeIcinMi,
+                        koyuModAktif = koyuModAktif,
+                        onTemaDegistir = {
+                            manuelKoyuMod = !koyuModAktif
+                        }
                     )
                 }
             }
@@ -66,7 +71,12 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UygulamaEkrani(activity: MainActivity, otomatikGuncellemeKontrol: Boolean) {
+fun UygulamaEkrani(
+    activity: MainActivity,
+    otomatikGuncellemeKontrol: Boolean,
+    koyuModAktif: Boolean,
+    onTemaDegistir: () -> Unit
+) {
     val context = activity
     val graph = context.graph
 
@@ -76,6 +86,7 @@ fun UygulamaEkrani(activity: MainActivity, otomatikGuncellemeKontrol: Boolean) {
     var indiriliyor by remember { mutableStateOf(false) }
     var indirmeYuzdesi by remember { mutableFloatStateOf(0f) }
     var guncellemeDiyaloguAcik by remember { mutableStateOf(false) }
+    var hakkindaDiyaloguAcik by remember { mutableStateOf(false) }
 
     fun guncellemeleriDenetle() {
         guncellemeDurumu = "Kontrol ediliyor..."
@@ -103,6 +114,17 @@ fun UygulamaEkrani(activity: MainActivity, otomatikGuncellemeKontrol: Boolean) {
             TopAppBar(
                 title = { Text("YTÜ Yemekhane Menüsü", fontWeight = FontWeight.Bold) },
                 actions = {
+                    // Tema Değiştirme Butonu (Güneş / Ay)
+                    IconButton(onClick = onTemaDegistir) {
+                        Text(if (koyuModAktif) "☀️" else "🌙", fontSize = 18.sp)
+                    }
+
+                    // Hakkında Butonu
+                    IconButton(onClick = { hakkindaDiyaloguAcik = true }) {
+                        Text("ℹ️", fontSize = 16.sp)
+                    }
+
+                    // Yenile Butonu
                     TextButton(onClick = {
                         activity.lifecycleScope.launch {
                             Toast.makeText(context, "Menü senkronize ediliyor...", Toast.LENGTH_SHORT).show()
@@ -172,6 +194,36 @@ fun UygulamaEkrani(activity: MainActivity, otomatikGuncellemeKontrol: Boolean) {
                 }
             }
         }
+    }
+
+    // Hakkında Diyaloğu
+    if (hakkindaDiyaloguAcik) {
+        AlertDialog(
+            onDismissRequest = { hakkindaDiyaloguAcik = false },
+            title = { Text("Hakkında") },
+            text = {
+                Column {
+                    Text("🍽️ YTÜ Menü (v${BuildConfig.VERSION_NAME})", fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Yıldız Teknik Üniversitesi Sağlık Kültür ve Spor Daire Başkanlığı (SKS) " +
+                        "öğrenci yemek menülerini pratik bir şekilde takip etmeniz için geliştirilmiş One UI uyumlu yardımcı uygulama ve ana ekran widget'ı.",
+                        fontSize = 13.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("✨ Özellikler:", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                    Text("• Öğle ve akşam saatine duyarlı otomatik geçiş", fontSize = 12.sp)
+                    Text("• Tatil günlerinde sonraki açık günün menü önizlemesi", fontSize = 12.sp)
+                    Text("• Normal ve vejetaryen menü alternatifleri", fontSize = 12.sp)
+                    Text("• Açık/Koyu tema ve widget dinamik renk desteği", fontSize = 12.sp)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { hakkindaDiyaloguAcik = false }) {
+                    Text("Tamam")
+                }
+            }
+        )
     }
 
     // Güncelleme İndirme Diyaloğu
