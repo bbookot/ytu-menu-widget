@@ -36,22 +36,19 @@ android {
         buildConfigField("String", "GITHUB_REPO", "\"$githubRepo\"")
     }
 
-    val keystoreYolu = gizli("YTU_KEYSTORE_PATH", "storeFile")
     signingConfigs {
-        if (keystoreYolu != null) {
-            create("release") {
-                storeFile = file(keystoreYolu)
-                storePassword = gizli("YTU_KEYSTORE_PASSWORD", "storePassword")
-                keyAlias = gizli("YTU_KEY_ALIAS", "keyAlias")
-                keyPassword = gizli("YTU_KEY_PASSWORD", "keyPassword")
-            }
+        create("release") {
+            storeFile = file("release.jks")
+            storePassword = "ytu123456"
+            keyAlias = "ytumenu"
+            keyPassword = "ytu123456"
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfigs.findByName("release")?.let { signingConfig = it }
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
