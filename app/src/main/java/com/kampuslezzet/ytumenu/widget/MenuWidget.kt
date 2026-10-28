@@ -170,7 +170,7 @@ private fun MesajGosterimi(
                 style = TextStyle(
                     color = GlanceTheme.colors.primary,
                     fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Bold
                 ),
                 maxLines = 1
             )
