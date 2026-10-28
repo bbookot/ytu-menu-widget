@@ -26,6 +26,8 @@ data class WidgetIcerik(
     val kapaliGun: Boolean,
     val yenileniyor: Boolean,
     val sonGuncelleme: String?,
+    val sonrakiAcikGun: java.time.LocalDate?,
+    val sonrakiAcikMenu: com.kampuslezzet.ytumenu.domain.model.GunlukMenu?,
     val sonrakiGecis: LocalDateTime,
     val senkronGerekli: Boolean,
 )
@@ -52,6 +54,14 @@ class WidgetIcerikOlusturucu(
         var mesaj: String? = null
         var altMesaj: String? = null
         var kapali = false
+        var sonrakiMenu: com.kampuslezzet.ytumenu.domain.model.GunlukMenu? = null
+
+        if (durum is GunDurumu.HaftaSonu || durum is GunDurumu.ResmiTatil) {
+            val sonrakiDurum = repo.gunDurumu(sonrakiAcik)
+            if (sonrakiDurum is GunDurumu.Menu) {
+                sonrakiMenu = sonrakiDurum.menu
+            }
+        }
 
         when (durum) {
             is GunDurumu.Menu -> {
@@ -112,6 +122,8 @@ class WidgetIcerikOlusturucu(
             kapaliGun = kapali,
             yenileniyor = yenileniyor,
             sonGuncelleme = sonGuncelleme,
+            sonrakiAcikGun = if (kapali) sonrakiAcik else null,
+            sonrakiAcikMenu = sonrakiMenu,
             sonrakiGecis = g.sonrakiGecis,
             senkronGerekli = repo.senkronGerekli(g.gun),
         )

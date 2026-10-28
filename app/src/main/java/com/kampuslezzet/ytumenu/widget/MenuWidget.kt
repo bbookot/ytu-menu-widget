@@ -83,7 +83,7 @@ private fun WidgetGovde(context: Context, icerik: WidgetIcerik) {
                 contentAlignment = Alignment.Center
             ) {
                 if (icerik.mesaj != null) {
-                    MesajGosterimi(icerik.mesaj, icerik.altMesaj)
+                    MesajGosterimi(icerik.mesaj, icerik.altMesaj, icerik.sonrakiAcikGun, icerik.sonrakiAcikMenu)
                 } else {
                     OgunlerGosterimi(icerik.ogle, icerik.aksam)
                 }
@@ -143,9 +143,14 @@ private fun UstBaslik(icerik: WidgetIcerik) {
 }
 
 @Composable
-private fun MesajGosterimi(mesaj: String, altMesaj: String?) {
+private fun MesajGosterimi(
+    mesaj: String,
+    altMesaj: String?,
+    sonrakiAcikGun: java.time.LocalDate? = null,
+    sonrakiAcikMenu: com.kampuslezzet.ytumenu.domain.model.GunlukMenu? = null,
+) {
     Column(
-        modifier = GlanceModifier.fillMaxWidth().padding(8.dp),
+        modifier = GlanceModifier.fillMaxWidth().padding(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -153,18 +158,82 @@ private fun MesajGosterimi(mesaj: String, altMesaj: String?) {
             text = mesaj,
             style = TextStyle(
                 color = GlanceTheme.colors.onSurface,
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Medium
             ),
             maxLines = 2
         )
         if (altMesaj != null) {
-            Spacer(modifier = GlanceModifier.height(4.dp))
+            Spacer(modifier = GlanceModifier.height(2.dp))
             Text(
                 text = altMesaj,
                 style = TextStyle(
-                    color = GlanceTheme.colors.onSurfaceVariant,
-                    fontSize = 11.sp
+                    color = GlanceTheme.colors.primary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                ),
+                maxLines = 1
+            )
+        }
+
+        // Eğer tatil günüyse ve bir sonraki günün menüsü hazırsa göster
+        if (sonrakiAcikMenu != null) {
+            Spacer(modifier = GlanceModifier.height(6.dp))
+            Box(
+                modifier = GlanceModifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(GlanceTheme.colors.outline)
+            ) {}
+            Spacer(modifier = GlanceModifier.height(4.dp))
+
+            Row(modifier = GlanceModifier.fillMaxWidth()) {
+                val ogle = sonrakiAcikMenu.ogle
+                val aksam = sonrakiAcikMenu.aksam
+                if (ogle != null) {
+                    Box(modifier = GlanceModifier.defaultWeight()) {
+                        OzetMenuYazisi("Öğle", ogle)
+                    }
+                }
+                if (aksam != null) {
+                    Spacer(modifier = GlanceModifier.width(6.dp))
+                    Box(modifier = GlanceModifier.defaultWeight()) {
+                        OzetMenuYazisi("Akşam", aksam)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OzetMenuYazisi(baslik: String, ogun: com.kampuslezzet.ytumenu.domain.model.OgunMenusu) {
+    Column {
+        Text(
+            text = baslik,
+            style = TextStyle(
+                color = GlanceTheme.colors.primary,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold
+            )
+        )
+        ogun.normal.take(3).forEach { y ->
+            Text(
+                text = "• ${y.ad}",
+                style = TextStyle(
+                    color = GlanceTheme.colors.onSurface,
+                    fontSize = 9.sp
+                ),
+                maxLines = 1
+            )
+        }
+        val vej = ogun.vejetaryenFarki
+        if (vej.isNotEmpty()) {
+            Text(
+                text = "🌱 " + vej.first().ad,
+                style = TextStyle(
+                    color = GlanceTheme.colors.secondary,
+                    fontSize = 8.sp
                 ),
                 maxLines = 1
             )
