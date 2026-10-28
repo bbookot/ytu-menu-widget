@@ -28,7 +28,11 @@ object YemekCozucu {
         return satirlar.filterNot(::gurultuMu).map { satir ->
             val eslesme = KALORI.find(satir)
             val kalori = eslesme?.groupValues?.get(1)?.toIntOrNull()
-            val hamAd = (if (eslesme != null) satir.removeRange(eslesme.range) else satir).trim()
+            var hamAd = (if (eslesme != null) satir.removeRange(eslesme.range) else satir).trim()
+            
+            // SKS vejetaryen menülerindeki "V." veya "V " öneklerini temizle
+            hamAd = hamAd.replace(Regex("""^[vV]\.\s*|^[vV]\s+"""), "").trim()
+
             val buyuk = hamAd.uppercase(TR)
             val kategori = when {
                 CORBA.any(buyuk::contains) -> Kategori.CORBA

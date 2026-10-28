@@ -42,9 +42,14 @@ class MainActivity : ComponentActivity() {
         val guncellemeIcinMi = intent.getBooleanExtra(EKSTRA_GUNCELLE, false)
 
         setContent {
-            MaterialTheme(
-                colorScheme = dynamicLightColorSchemeCompat(this)
-            ) {
+            val isKoyuMod = androidx.compose.foundation.isSystemInDarkTheme()
+            val renkler = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                if (isKoyuMod) dynamicDarkColorScheme(this) else dynamicLightColorScheme(this)
+            } else {
+                if (isKoyuMod) darkColorScheme() else lightColorScheme()
+            }
+
+            MaterialTheme(colorScheme = renkler) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -56,15 +61,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun dynamicLightColorSchemeCompat(context: android.content.Context): ColorScheme {
-    return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-        dynamicLightColorScheme(context)
-    } else {
-        lightColorScheme()
     }
 }
 
