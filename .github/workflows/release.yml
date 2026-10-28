@@ -35,16 +35,19 @@ jobs:
           echo "YTU_VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
           echo "YTU_VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
 
-      - name: Keystore Oluştur / Çöz
+      - name: Sabit Keystore Çöz
         run: |
           mkdir -p app/build/outputs/apk/release
           if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.jks
-            echo "YTU_KEYSTORE_PATH=release.jks" >> $GITHUB_ENV
-            echo "YTU_KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
-            echo "YTU_KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
-            echo "YTU_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.jks
+          else
+            # Varsayılan sabit depo anahtarı (tüm derlemelerin imzası birebir aynı kalsın diye)
+            echo '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' | base64 --decode > release.jks
           fi
+          echo "YTU_KEYSTORE_PATH=../release.jks" >> $GITHUB_ENV
+          echo "YTU_KEYSTORE_PASSWORD=ytu123456" >> $GITHUB_ENV
+          echo "YTU_KEY_ALIAS=ytumenu" >> $GITHUB_ENV
+          echo "YTU_KEY_PASSWORD=ytu123456" >> $GITHUB_ENV
 
       - name: İzin Ver
         run: chmod +x gradlew
@@ -66,3 +69,4 @@ jobs:
             app/build/outputs/apk/release/*.apk
             app/build/outputs/apk/debug/*.apk
           generate_release_notes: true
+
