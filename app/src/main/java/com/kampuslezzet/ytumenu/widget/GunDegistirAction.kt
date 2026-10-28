@@ -17,7 +17,7 @@ class GunDegistirAction : ActionCallback {
         val yon = parameters[YON_KEY] ?: 0
         val graph = context.graph
         val mevcutOfset = graph.tercihler.widgetGunOfseti()
-        val yeniOfset = (mevcutOfset + yon).coerceIn(0, 14) // 0: bugün, en fazla 14 gün ileri
+        val yeniOfset = (mevcutOfset + yon).coerceIn(0, 7) // 0: bugün, en fazla 7 gün ileri
         graph.tercihler.widgetGunOfsetiAyarla(yeniOfset)
         WidgetYenileyici.yenile(context)
     }

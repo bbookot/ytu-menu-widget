@@ -66,6 +66,14 @@ class WidgetIcerikOlusturucu(
         var kapali = false
         var sonrakiMenu: com.kampuslezzet.ytumenu.domain.model.GunlukMenu? = null
 
+        // Eğer tatil veya hafta sonu ise sonraki açık günün menüsünü bul
+        if (durum is GunDurumu.HaftaSonu || durum is GunDurumu.ResmiTatil) {
+            val sonrakiDurum = repo.gunDurumu(sonrakiAcik)
+            if (sonrakiDurum is GunDurumu.Menu) {
+                sonrakiMenu = sonrakiDurum.menu
+            }
+        }
+
         val ogleGoster = if (ofset > 0) true else g.ogleGoster
         val aksamGoster = if (ofset > 0) true else g.aksamGoster
 

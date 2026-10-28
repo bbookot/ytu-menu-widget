@@ -64,8 +64,13 @@ class MenuRepository(
      */
     suspend fun senkronize(zorla: Boolean): Boolean = kilit.withLock {
         val bugun = saat.bugun()
-        val aylar = linkedSetOf(YearMonth.from(bugun), YearMonth.from(bugun.plusDays(1)))
-        if (bugun.lengthOfMonth() - bugun.dayOfMonth < 5) aylar += YearMonth.from(bugun).plusMonths(1)
+        // Bu ay, ertesi günün ayı ve sonraki 7 günün kapsadığı ayı mutlaka dahil et
+        val aylar = linkedSetOf(
+            YearMonth.from(bugun),
+            YearMonth.from(bugun.plusDays(1)),
+            YearMonth.from(bugun.plusDays(7))
+        )
+        if (bugun.lengthOfMonth() - bugun.dayOfMonth < 7) aylar += YearMonth.from(bugun).plusMonths(1)
 
         var basarili = true
         for (ay in aylar) {
