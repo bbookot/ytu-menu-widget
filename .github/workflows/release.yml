@@ -24,15 +24,13 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Android SDK Kurulumu
-        uses: android-actions/setup-android@v3
-
       - name: Sürüm Kodunu Belirle
         run: |
           echo "YTU_VERSION_CODE=${{ github.run_number }}" >> $GITHUB_ENV
 
       - name: Keystore Oluştur / Çöz
         run: |
+          mkdir -p app/build/outputs/apk/release
           if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
             echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.jks
             echo "YTU_KEYSTORE_PATH=release.jks" >> $GITHUB_ENV
@@ -41,23 +39,23 @@ jobs:
             echo "YTU_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
           fi
 
-      - name: Gradle Wrapper Oluştur ve İzin Ver
-        run: |
-          gradle wrapper
-          chmod +x gradlew
+      - name: İzin Ver
+        run: chmod +x gradlew
 
-      - name: Release APK Derle
+      - name: APK Derle
         run: |
           if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            ./gradlew assembleRelease
+            ./gradlew assembleRelease --no-daemon
           else
-            ./gradlew assembleDebug
-            mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/release/app-release-unsigned.apk
+            ./gradlew assembleDebug --no-daemon
+            cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/release/ytu-menu.apk
           fi
 
       - name: GitHub Release Yayınla
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: app/build/outputs/apk/**/*.apk
+          files: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/debug/*.apk
           generate_release_notes: true
