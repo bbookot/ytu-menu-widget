@@ -1,0 +1,63 @@
+name: Release APK Derle ve Yayınla
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Kodu Çek
+        uses: actions/checkout@v4
+
+      - name: Java 17 Kurulumu
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Android SDK Kurulumu
+        uses: android-actions/setup-android@v3
+
+      - name: Sürüm Kodunu Belirle
+        run: |
+          echo "YTU_VERSION_CODE=${{ github.run_number }}" >> $GITHUB_ENV
+
+      - name: Keystore Oluştur / Çöz
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.jks
+            echo "YTU_KEYSTORE_PATH=release.jks" >> $GITHUB_ENV
+            echo "YTU_KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+            echo "YTU_KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
+            echo "YTU_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+          fi
+
+      - name: Gradle Wrapper Oluştur ve İzin Ver
+        run: |
+          gradle wrapper
+          chmod +x gradlew
+
+      - name: Release APK Derle
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            ./gradlew assembleRelease
+          else
+            ./gradlew assembleDebug
+            mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/release/app-release-unsigned.apk
+          fi
+
+      - name: GitHub Release Yayınla
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: app/build/outputs/apk/**/*.apk
+          generate_release_notes: true

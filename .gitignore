@@ -1,0 +1,20 @@
+# Derleme çıktıları
+build/
+.gradle/
+.kotlin/
+*.apk
+*.aab
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+captures/
+
+# Yerel ve GİZLİ dosyalar — asla repoya girmez
+local.properties
+keystore.properties
+*.jks
+*.keystore
+*.p12
+secrets/

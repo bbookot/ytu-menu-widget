@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">YTÜ Menü</string>
+    <string name="widget_adi">YTÜ Yemekhane Menüsü</string>
+    <string name="widget_aciklama">Günün öğle ve akşam menüsü</string>
+</resources>
