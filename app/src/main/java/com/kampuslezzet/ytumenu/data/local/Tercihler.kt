@@ -23,6 +23,13 @@ class Tercihler(private val context: Context) {
     private val sonGuncellemeAnahtari = longPreferencesKey("son_guncelleme")
     private val yenilemeAnahtari = longPreferencesKey("yenileme_baslangic")
     private val widgetSurumuAnahtari = intPreferencesKey("widget_surumu")
+    private val widgetGunOfsetiAnahtari = intPreferencesKey("widget_gun_ofseti")
+
+    suspend fun widgetGunOfseti(): Int = oku()[widgetGunOfsetiAnahtari] ?: 0
+
+    suspend fun widgetGunOfsetiAyarla(ofset: Int) {
+        context.dataStore.edit { it[widgetGunOfsetiAnahtari] = ofset.coerceAtLeast(0) }
+    }
 
     suspend fun sonKontrol(ay: YearMonth): Long? = oku()[kontrolAnahtari(ay)]
     suspend fun sonHata(ay: YearMonth): Long? = oku()[hataAnahtari(ay)]

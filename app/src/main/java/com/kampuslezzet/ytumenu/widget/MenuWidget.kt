@@ -124,20 +124,73 @@ private fun UstBaslik(icerik: WidgetIcerik) {
             }
         }
 
-        // Yenile Butonu
-        Box(
-            modifier = GlanceModifier
-                .size(32.dp)
-                .cornerRadius(16.dp)
-                .background(GlanceTheme.colors.secondaryContainer)
-                .clickable(actionRunCallback<RefreshAction>()),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                provider = ImageProvider(R.drawable.ic_yenile),
-                contentDescription = "Yenile",
-                modifier = GlanceModifier.size(16.dp)
-            )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Sol Yön Tuşu (<) - Eğer bugünden ilerdeysek geri dönülebilir
+            if (icerik.gunOfseti > 0) {
+                Box(
+                    modifier = GlanceModifier
+                        .size(30.dp)
+                        .cornerRadius(15.dp)
+                        .background(GlanceTheme.colors.surfaceVariant)
+                        .clickable(
+                            actionRunCallback<GunDegistirAction>(
+                                androidx.glance.action.actionParametersOf(GunDegistirAction.YON_KEY to -1)
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "◀",
+                        style = TextStyle(
+                            color = GlanceTheme.colors.primary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+                Spacer(modifier = GlanceModifier.width(4.dp))
+            }
+
+            // Sağ Yön Tuşu (>) - İleriki günlere geçiş
+            Box(
+                modifier = GlanceModifier
+                    .size(30.dp)
+                    .cornerRadius(15.dp)
+                    .background(GlanceTheme.colors.surfaceVariant)
+                    .clickable(
+                        actionRunCallback<GunDegistirAction>(
+                            androidx.glance.action.actionParametersOf(GunDegistirAction.YON_KEY to 1)
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "▶",
+                    style = TextStyle(
+                        color = GlanceTheme.colors.primary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+
+            Spacer(modifier = GlanceModifier.width(4.dp))
+
+            // Yenile Butonu
+            Box(
+                modifier = GlanceModifier
+                    .size(30.dp)
+                    .cornerRadius(15.dp)
+                    .background(GlanceTheme.colors.secondaryContainer)
+                    .clickable(actionRunCallback<RefreshAction>()),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    provider = ImageProvider(R.drawable.ic_yenile),
+                    contentDescription = "Yenile",
+                    modifier = GlanceModifier.size(15.dp)
+                )
+            }
         }
     }
 }

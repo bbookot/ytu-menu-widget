@@ -214,8 +214,16 @@ fun UygulamaEkrani(
                     Text("✨ Özellikler:", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
                     Text("• Öğle ve akşam saatine duyarlı otomatik geçiş", fontSize = 12.sp)
                     Text("• Tatil günlerinde sonraki açık günün menü önizlemesi", fontSize = 12.sp)
+                    Text("• Günler arası ileri/geri gezinti tuşları", fontSize = 12.sp)
                     Text("• Normal ve vejetaryen menü alternatifleri", fontSize = 12.sp)
                     Text("• Açık/Koyu tema ve widget dinamik renk desteği", fontSize = 12.sp)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        "🔗 GitHub Proje Sayfası:\nhttps://github.com/${BuildConfig.GITHUB_REPO}",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             },
             confirmButton = {

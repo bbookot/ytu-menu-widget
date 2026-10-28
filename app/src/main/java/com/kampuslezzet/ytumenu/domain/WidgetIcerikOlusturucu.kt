@@ -26,6 +26,7 @@ data class WidgetIcerik(
     val kapaliGun: Boolean,
     val yenileniyor: Boolean,
     val sonGuncelleme: String?,
+    val gunOfseti: Int,
     val sonrakiAcikGun: java.time.LocalDate?,
     val sonrakiAcikMenu: com.kampuslezzet.ytumenu.domain.model.GunlukMenu?,
     val sonrakiGecis: LocalDateTime,
@@ -42,11 +43,20 @@ class WidgetIcerikOlusturucu(
     suspend fun olustur(): WidgetIcerik {
         val simdi = saat.simdi()
         val g = GosterimPlanlayici.planla(simdi)
-        val yarin = g.mod == GosterimModu.YARIN
-        val durum = repo.gunDurumu(g.gun)
+        val ofset = tercihler.widgetGunOfseti()
 
-        val baslik = (if (yarin) "Yarın, " else "Bugün, ") + TurkceTarih.uzun(g.gun)
-        val sonrakiAcik = TatilTakvimi.sonrakiAcikGun(g.gun)
+        // Eğer kullanıcı sağ/sol oklarıyla ileri bir güne geçtiyse o günü göster
+        val hedefGun = if (ofset > 0) simdi.toLocalDate().plusDays(ofset.toLong()) else g.gun
+        val yarin = ofset == 1 || (ofset == 0 && g.mod == GosterimModu.YARIN)
+        val durum = repo.gunDurumu(hedefGun)
+
+        val baslik = when {
+            ofset == 0 && g.mod == GosterimModu.BUGUN -> "Bugün, " + TurkceTarih.uzun(hedefGun)
+            ofset == 0 && g.mod == GosterimModu.YARIN -> "Yarın, " + TurkceTarih.uzun(hedefGun)
+            ofset == 1 -> "Yarın, " + TurkceTarih.uzun(hedefGun)
+            else -> TurkceTarih.uzun(hedefGun)
+        }
+        val sonrakiAcik = TatilTakvimi.sonrakiAcikGun(hedefGun)
         val sonrakiAcikMetni = "Sonraki açık gün: ${TurkceTarih.gunVeTarih(sonrakiAcik)}"
 
         var ogle: OgunBolumu? = null
@@ -56,17 +66,13 @@ class WidgetIcerikOlusturucu(
         var kapali = false
         var sonrakiMenu: com.kampuslezzet.ytumenu.domain.model.GunlukMenu? = null
 
-        if (durum is GunDurumu.HaftaSonu || durum is GunDurumu.ResmiTatil) {
-            val sonrakiDurum = repo.gunDurumu(sonrakiAcik)
-            if (sonrakiDurum is GunDurumu.Menu) {
-                sonrakiMenu = sonrakiDurum.menu
-            }
-        }
+        val ogleGoster = if (ofset > 0) true else g.ogleGoster
+        val aksamGoster = if (ofset > 0) true else g.aksamGoster
 
         when (durum) {
             is GunDurumu.Menu -> {
-                if (g.ogleGoster) ogle = OgunBolumu(if (yarin) "Yarın Öğle" else "Öğle", durum.menu.ogle)
-                if (g.aksamGoster) aksam = OgunBolumu(if (yarin) "Yarın Akşam" else "Akşam", durum.menu.aksam)
+                if (ogleGoster) ogle = OgunBolumu(if (yarin) "Öğle" else "Öğle", durum.menu.ogle)
+                if (aksamGoster) aksam = OgunBolumu(if (yarin) "Akşam" else "Akşam", durum.menu.aksam)
             }
             GunDurumu.HaftaSonu -> {
                 kapali = true
@@ -122,6 +128,7 @@ class WidgetIcerikOlusturucu(
             kapaliGun = kapali,
             yenileniyor = yenileniyor,
             sonGuncelleme = sonGuncelleme,
+            gunOfseti = ofset,
             sonrakiAcikGun = if (kapali) sonrakiAcik else null,
             sonrakiAcikMenu = sonrakiMenu,
             sonrakiGecis = g.sonrakiGecis,
