@@ -18,8 +18,9 @@ val keystoreProps = Properties().apply {
 fun gizli(env: String, prop: String): String? =
     System.getenv(env)?.takeIf { it.isNotBlank() } ?: keystoreProps.getProperty(prop)
 
-// Sürüm kodu CI'daki çalıştırma numarasından gelir; yerel derlemelerde 1'dir.
-val surumKodu = (System.getenv("YTU_VERSION_CODE") ?: "1").toInt()
+// Sürüm bilgisi CI'daki tag'den veya yerel varsayılandan gelir.
+val surumKodu = (System.getenv("YTU_VERSION_CODE") ?: "10003").toInt()
+val surumAdi = System.getenv("YTU_VERSION_NAME") ?: "1.0.3"
 val githubRepo = providers.gradleProperty("ytumenu.githubRepo").get()
 
 android {
@@ -31,7 +32,7 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = surumKodu
-        versionName = "1.0.$surumKodu"
+        versionName = surumAdi
         buildConfigField("String", "GITHUB_REPO", "\"$githubRepo\"")
     }
 

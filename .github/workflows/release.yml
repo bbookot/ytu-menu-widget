@@ -24,9 +24,16 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Sürüm Kodunu Belirle
+      - name: Sürüm Kodunu ve Adını Belirle
         run: |
-          echo "YTU_VERSION_CODE=${{ github.run_number }}" >> $GITHUB_ENV
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          # v1.0.3 -> 1.0.3
+          VERSION_NAME="${TAG_NAME#v}"
+          # 1.0.3 -> 10003
+          IFS='.' read -r major minor patch <<< "$VERSION_NAME"
+          VERSION_CODE=$(( ${major:-1} * 10000 + ${minor:-0} * 100 + ${patch:-0} ))
+          echo "YTU_VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "YTU_VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
 
       - name: Keystore Oluştur / Çöz
         run: |
